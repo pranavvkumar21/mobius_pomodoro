@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (QApplication, QSystemTrayIcon, QMenu, QAction,
                              QPushButton, QDialog)
 from PyQt5.QtGui import QIcon, QColor, QPainter, QLinearGradient, QFont
 from PyQt5.QtCore import Qt, QTimer, QRect
+from PyQt5.QtCore import pyqtSlot
 import yaml, os
 
 
@@ -33,6 +34,41 @@ class PreferencesDialog(QDialog):
         layout.addLayout(form_layout)
         layout.addWidget(self.save_button)
         self.setLayout(layout)
+        self.setStyleSheet("""
+        QDialog {
+            background-color: #282c34;
+            color: #abb2bf;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+        }
+        QLabel {
+            color: #61dafb;
+            font-weight: 600;
+        }
+        QLineEdit {
+            background-color: #3a3f4b;
+            border: 1px solid #61dafb;
+            border-radius: 5px;
+            padding: 5px;
+            color: white;
+        }
+        QPushButton {
+            background-color: #61dafb;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            color: #282c34;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        QPushButton:hover {
+            background-color: #21a1f1;
+        }
+        QPushButton:pressed {
+            background-color: #1b6b99;
+        }
+    """)
+
 
     def get_values(self):
         return (int(self.work_input.text()), int(self.rest_input.text()), int(self.cycles_input.text()))
@@ -83,6 +119,8 @@ class TopBarProgress(QWidget):
 
         self.setGeometry(0, 0, self.screen_width, self.bar_height)
         self.show()
+
+
 
     def set_progress(self, percent, is_rest):
         self.progress = max(0.0, min(percent, 1.0))
@@ -150,8 +188,9 @@ class TrayPomodoro:
     def __init__(self):
         self.app = QApplication(sys.argv)
         self.app.setQuitOnLastWindowClosed(False) 
+
         screen = self.app.primaryScreen()
-        screen_geometry = screen.geometry()
+        screen_geometry = screen.availableGeometry()
         self.floating_timer = FloatingTimer(screen_geometry)
         self.overlay = FullScreenOverlay(screen_geometry)
         if not os.path.exists('pomodoro_config.yaml'):
@@ -183,7 +222,7 @@ class TrayPomodoro:
         self.pref_dialog = None
 
         # Create tray icon and menu
-        icon = QIcon("assets/mobius.png")
+        icon = QIcon("assets/mobius_icon.ico")
         if icon.isNull():
             icon = QApplication.style().standardIcon(QApplication.style().SP_ComputerIcon)  # fallback icon
 
@@ -276,7 +315,6 @@ class TrayPomodoro:
 
     def tick(self):
         decrement = self.timer.interval() / 1000.0  # seconds per tick
-
         if self.seconds_left > 0:
             self.seconds_left -= decrement
             if self.seconds_left < 0:
