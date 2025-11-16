@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 import logging
 from PyQt5.QtWidgets import (QApplication, QSystemTrayIcon, QMenu, QAction,
@@ -90,11 +91,11 @@ class FloatingTimer(QWidget):
         font = QFont("Arial", 20, QFont.Bold)
         self.label.setFont(font)
         self.label.setAlignment(Qt.AlignCenter)
-        self.label.resize(120, 40)
-        self.resize(120, 40)
+        self.label.resize(100, 20)
+        self.resize(100, 20)
 
         # Position bottom-right corner above the taskbar with a small margin
-        margin_x, margin_y = 15, 50
+        margin_x, margin_y = 15, 10
         x = screen_geometry.width() - self.width() - margin_x
         y = screen_geometry.height() - self.height() - margin_y
         self.move(x, y)
@@ -131,7 +132,7 @@ class TopBarProgress(QWidget):
         painter = QPainter(self)
 
         # Draw transparent dark background for bar depth
-        painter.fillRect(self.rect(), QColor(0, 0, 0, 80))
+        painter.fillRect(self.rect(), QColor(0, 0, 0, 0))
 
         progress_width = int(self.width() * self.progress)
         gradient_rect = QRect(0, 0, progress_width, self.bar_height)
