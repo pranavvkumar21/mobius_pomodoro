@@ -31,9 +31,9 @@ jobs:
     - name: Build executable
       run: |
         if [[ $RUNNER_OS == 'Windows' ]]; then
-          pyinstaller --onefile --name=mobius --add-data "mobius.png;." --icon=mobius_icon.ico pomodoro.py
+          pyinstaller --onefile --name=mobius --add-data "assets/mobius.png;." --icon=assets/mobius_icon.ico pomodoro.py
         else
-          pyinstaller --onefile --name=mobius --add-data "mobius.png:." --icon=mobius_icon.ico pomodoro.py
+          pyinstaller --onefile --name=mobius --add-data "assets/mobius.png:." --icon=assets/mobius_icon.ico pomodoro.py
         fi
       shell: bash
 
