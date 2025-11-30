@@ -8,6 +8,11 @@ from PyQt5.QtGui import QIcon, QColor, QPainter, QLinearGradient, QFont
 from PyQt5.QtCore import Qt, QTimer, QRect
 from PyQt5.QtCore import pyqtSlot
 import yaml, os
+from pathlib import Path
+
+ROOT = Path(__file__).parent
+CONFIG_PATH = ROOT / "pomodoro_config.yaml"
+ICON_PATH = ROOT / "assets" / "mobius_icon.ico"
 
 
 # Setup logging for verbose output
@@ -81,26 +86,41 @@ class FloatingTimer(QWidget):
             Qt.FramelessWindowHint | 
             Qt.WindowStaysOnTopHint | 
             Qt.Tool | 
-            Qt.WindowTransparentForInput  # makes widget ignore mouse events
+            Qt.WindowTransparentForInput
         )
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_ShowWithoutActivating)
 
         self.label = QLabel(self)
-        self.label.setStyleSheet("color: white;")
+        # Glassmorphism with emerald green text
+        self.label.setStyleSheet("""
+            QLabel {
+                color: #50C878;
+                background-color: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                border-radius: 10px;
+                padding: 8px 15px;
+                backdrop-filter: blur(10px);
+            }
+        """)
+        
         font = QFont("Arial", 20, QFont.Bold)
         self.label.setFont(font)
         self.label.setAlignment(Qt.AlignCenter)
-        self.label.resize(100, 20)
-        self.resize(100, 20)
+        
+        # Set initial text and auto-resize
+        self.label.setText("00:00")
+        self.label.adjustSize()
+        self.resize(self.label.size())
 
-        # Position bottom-right corner above the taskbar with a small margin
+        # Position bottom-right using available geometry
         margin_x, margin_y = 15, 10
         x = screen_geometry.width() - self.width() - margin_x
         y = screen_geometry.height() - self.height() - margin_y
         self.move(x, y)
 
         self.show()
+
 
     def update_time(self, text):
         self.label.setText(text)
@@ -194,9 +214,9 @@ class TrayPomodoro:
         screen_geometry = screen.availableGeometry()
         self.floating_timer = FloatingTimer(screen_geometry)
         self.overlay = FullScreenOverlay(screen_geometry)
-        if not os.path.exists('pomodoro_config.yaml'):
+        if not os.path.exists(str(CONFIG_PATH)):
             # Create default config file
-            with open('pomodoro_config.yaml', 'w') as f:
+            with open(str(CONFIG_PATH), 'w') as f:
                 yaml.dump({
                     'work_minutes': 25,
                     'rest_minutes': 5,
@@ -204,7 +224,7 @@ class TrayPomodoro:
                 }, f)
             logger.info("Created default pomodoro_config.yaml")
             
-        with open('pomodoro_config.yaml', 'r') as f:
+        with open(str(CONFIG_PATH), 'r') as f:
             config = yaml.safe_load(f)
 
         self.progress_bar = TopBarProgress(screen_geometry.width(), height=3)
@@ -223,7 +243,7 @@ class TrayPomodoro:
         self.pref_dialog = None
 
         # Create tray icon and menu
-        icon = QIcon("assets/mobius_icon.ico")
+        icon = QIcon(str(ICON_PATH))
         if icon.isNull():
             icon = QApplication.style().standardIcon(QApplication.style().SP_ComputerIcon)  # fallback icon
 
@@ -288,7 +308,7 @@ class TrayPomodoro:
         self.progress_bar.show()
 
     def save_preferences(self):
-        with open('pomodoro_config.yaml', 'w') as f:
+        with open(str(CONFIG_PATH), 'w') as f:
             yaml.dump({
                 'work_minutes': self.work_minutes,
                 'rest_minutes': self.rest_minutes,
